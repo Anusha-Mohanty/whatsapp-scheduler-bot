@@ -1,0 +1,16 @@
+# Timezone Configuration
+# Use IANA timezone names like: Asia/Kolkata, America/New_York, Europe/London, etc.
+# List of valid timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+DEFAULT_TIMEZONE=Asia/Kolkata
+
+# Scheduling Configuration
+# How many minutes before/after scheduled time to consider message "due" (default: 60)
+DUE_WINDOW_MINUTES=60
+
+# Google Sheets Configuration
+SHEET_ID=your_sheet_id_here
+SHEET_NAME=Sheet1
+
+# WhatsApp Configuration
+# Add your WhatsApp session data path if needed
+# SESSION_PATH=./session
