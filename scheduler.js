@@ -129,7 +129,7 @@ class CronScheduler {
 const cronScheduler = new CronScheduler();
 
 // Schedule message processing (for recurring scheduled tasks)
-async function scheduleMessageProcessing(sheetName, cronExpression, client, options = {}) {
+async function scheduleMessageProcessing(sheetName, cronExpression, client, options = {}, onAutoStop) {
   const jobId = `message_processing_${sheetName}`;
   
   const taskFunction = async () => {
@@ -150,6 +150,9 @@ async function scheduleMessageProcessing(sheetName, cronExpression, client, opti
         cronScheduler.stopJob(jobId);
         console.log(`⏹️ Schedule ${jobId} stopped (kept for future runs).`);
         console.log(`💡 Schedule will remain available for when new messages are added to the sheet.`);
+        if (typeof onAutoStop === 'function') {
+          onAutoStop();
+        }
       } else if (result.remainingMessages !== undefined) {
         console.log(`📊 Remaining messages in ${sheetName}: ${result.remainingMessages}`);
       }
