@@ -38,18 +38,8 @@ class MenuSystem {
   }
 
   async showScheduleMenu() {
-    console.log('\n📅 SCHEDULE FUTURE MESSAGES');
-    console.log('══════════════════════════════════════════════════════════════');
-    console.log('1. ⏰ Every 10 minutes');
-    console.log('2. ⏰ Every hour');
-    console.log('3. ⏰ Every 2 hours');
-    console.log('4. ⏰ Daily at 9 AM');
-    console.log('5. ⏰ Daily at 6 PM');
-    console.log('6. ⏰ Weekdays only');
-    console.log('7. ⏰ Custom schedule');
-    console.log('8. ↩️ Back to Main Menu');
-    console.log('══════════════════════════════════════════════════════════════');
-    
+    // Removed recurring schedule options to avoid duplicate printing. This menu is now a placeholder or can be repurposed.
+    // If needed, you can implement a different menu here.
     return await this.getUserChoice('Select schedule pattern (1-8): ', ['1', '2', '3', '4', '5', '6', '7', '8']);
   }
 
@@ -159,7 +149,7 @@ class MenuSystem {
     console.log('══════════════════════════════════════════════════════════════');
     
     // Connection Status
-    const connectionStatus = isReady ? '🟢 Connected' : '�� Disconnected';
+    const connectionStatus = isReady ? '🟢 Connected' : '🔴 Disconnected';
     let connectedNumber = '';
     if (isReady && client && client.info && client.info.wid && client.info.wid.user) {
       connectedNumber = client.info.wid.user;
