@@ -151,7 +151,14 @@ async function scheduleMessageProcessing(sheetName, cronExpression, client, opti
         console.log(`⏹️ Schedule ${jobId} stopped (kept for future runs).`);
         console.log(`💡 Schedule will remain available for when new messages are added to the sheet.`);
         if (typeof onAutoStop === 'function') {
+          console.log('🔄 Triggering auto-stop callback to return to main menu.');
           onAutoStop();
+        } else if (typeof globalThis.returnToMainMenu === 'function') {
+          // Fallback: call a global main menu function if defined
+          console.log('🔄 Fallback: Triggering global returnToMainMenu.');
+          globalThis.returnToMainMenu();
+        } else {
+          console.log('⚠️ No auto-stop callback or global main menu handler defined.');
         }
       } else if (result.remainingMessages !== undefined) {
         console.log(`📊 Remaining messages in ${sheetName}: ${result.remainingMessages}`);
