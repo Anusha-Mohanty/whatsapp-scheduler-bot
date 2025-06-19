@@ -371,10 +371,20 @@ class WhatsAppAutomation {
       
       try {
         // Schedule the recurring message processing
-        await scheduleMessageProcessing(this.config.messagesSheet, cronExpression, this.client, {
-          timezone: 'UTC',
-          runImmediately: true
-        });
+        await scheduleMessageProcessing(
+          this.config.messagesSheet,
+          cronExpression,
+          this.client,
+          {
+            timezone: 'UTC',
+            runImmediately: true
+          },
+          () => {
+            // Callback when schedule auto-stops
+            console.log('\n🎉 All scheduled messages sent. Returning to main menu...');
+            setTimeout(() => this.runMainLoop(), 1000); // Show menu after a short delay
+          }
+        );
         
         // Start the job immediately
         const jobId = `message_processing_${this.config.messagesSheet}`;
@@ -415,6 +425,7 @@ class WhatsAppAutomation {
     
     while (running) {
       try {
+        // Only call showScheduleMenu to display options and get choice
         const choice = await this.menu.showScheduleMenu();
         
         if (choice === '8') {
