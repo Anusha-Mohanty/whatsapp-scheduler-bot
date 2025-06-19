@@ -12,7 +12,6 @@ class MenuSystem {
     console.clear();
     console.log('╔══════════════════════════════════════════════════════════════╗');
     console.log('║                    WhatsApp Scheduler Bot                    ║');
-    console.log('║                        Version 3.0                          ║');
     console.log('╚══════════════════════════════════════════════════════════════╝');
     console.log('');
     console.log(`👤 Team Member: ${teamMember}`);
@@ -160,10 +159,21 @@ class MenuSystem {
     console.log('══════════════════════════════════════════════════════════════');
     
     // Connection Status
-    const connectionStatus = isReady ? '🟢 Connected' : '🔴 Disconnected';
-    console.log(`🔌 WhatsApp Status: ${connectionStatus}`);
+    const connectionStatus = isReady ? '🟢 Connected' : '�� Disconnected';
+    let connectedNumber = '';
+    if (isReady && client && client.info && client.info.wid && client.info.wid.user) {
+      connectedNumber = client.info.wid.user;
+    }
+    if (isReady && client && client.info && client.info.pushname) {
+      connectedNumber += ` (${client.info.pushname})`;
+    }
+    if (isReady && connectedNumber) {
+      console.log(`🔌 WhatsApp Status: ${connectionStatus} as ${connectedNumber}`);
+    } else {
+      console.log(`🔌 WhatsApp Status: ${connectionStatus}`);
+    }
     
-    // Active Schedules
+    // Active/Stopped Schedules
     const activeSchedules = schedules.filter(s => s.isActive).length;
     const stoppedSchedules = schedules.filter(s => !s.isActive).length;
     const totalSchedules = schedules.length;
