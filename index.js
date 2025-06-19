@@ -297,15 +297,7 @@ class WhatsAppAutomation {
       console.log('7. Cancel');
       console.log('══════════════════════════════════════════════════════════════');
       
-      const scheduleChoice = await this.menu.getUserChoice('Select interval (1-7):', [
-        '1. Every 1 minute',
-        '2. Every 5 minutes',
-        '3. Every 10 minutes', 
-        '4. Every 30 minutes',
-        '5. Every hour',
-        '6. Custom interval',
-        '7. Cancel'
-      ], ['1', '2', '3', '4', '5', '6', '7']);
+      const scheduleChoice = await this.menu.getUserChoice('Select interval (1-7):', ['1', '2', '3', '4', '5', '6', '7']);
       
       if (scheduleChoice === '7') {
         return;
