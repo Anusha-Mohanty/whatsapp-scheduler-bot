@@ -10,6 +10,7 @@
 2. **Set up Environment Variables**
    - Copy `env_template.txt` to `.env`
    - Fill in your Google Sheets credentials and WhatsApp settings
+   - Set your timezone and due window (see below)
 
 3. **Create Google Sheet**
    - Create a new Google Sheet
@@ -21,52 +22,53 @@
    npm start
    ```
 
-## 📋 Sheet Format
+## 📋 Sheet Format (Latest)
 
 Create a single sheet with these columns:
 
-| Campaign Name | Phone Numbers | Message Text | Image | Time | Status | Run |
-|---------------|---------------|--------------|-------|------|--------|-----|
-| Morning Greeting | +1234567890 | Hello! | img1 | | Pending | Yes |
-| Team Update | +1234567890,+9876543210 | Hi there! | img2 | 9:00 | Pending | Yes |
+| Campaign | Phone Numbers | Message Text | Image | Time | Status | Run |
+|----------|---------------|--------------|-------|------|--------|-----|
+| Morning Greeting | +1234567890 | Hello! | https://drive.google.com/file/d/... | | Pending | Yes |
+| Team Update | +1234567890,+9876543210 | Hi there! | https://example.com/image.jpg | 9:00 | Pending | Yes |
 | Test Campaign | +9876543210 | Test msg | | | Sent | Yes |
 
 ### Column Details:
-
-- **Campaign Name**: Name of your campaign (for organization)
-- **Phone Numbers**: Single number or comma-separated multiple numbers
+- **Campaign**: (Optional) Name of your campaign (for organization)
+- **Phone Numbers**: Single or multiple numbers (comma, semicolon, pipe, or newline separated)
 - **Message Text**: The message to send
-- **Image**: (Optional) Image URL or filename
-- **Time**: (Optional) When to send (HH:MM, 9:00 AM, etc.)
-- **Status**: Auto-updated (Pending, Sent, Failed)
-- **Run**: Set to "Yes" to include in processing
+- **Image**: (Optional) Direct image URL or Google Drive link (auto-converted)
+- **Time**: (Optional) When to send (supports many formats: HH:MM, 9:00 AM, 25/12/2024 20:30, "now")
+- **Status**: Auto-updated (Pending, Sent, Failed, Completed)
+- **Run**: Set to "Yes", "True", or "1" to include in processing
 
 ### Phone Number Formats:
 - Single: `+1234567890` or `1234567890`
-- Multiple: `+1234567890,+9876543210,+5551234567`
+- Multiple: `+1234567890,+9876543210` or separated by `, ; |` or newlines
+- With country code: `+919078840822`
+- International: `+1234567890`
 
 ### Time Formats:
 - `9:00` (24-hour)
 - `9:00 AM` (12-hour)
 - `14:30` (24-hour)
 - `2:30 PM` (12-hour)
+- `25/12/2024 20:30` (date + time)
+- `now` (immediate send)
+
+### Image Column:
+- Supports direct image URLs and Google Drive links (auto-converted to direct links)
 
 ## 🎯 How It Works
 
-### Option 1: Send Messages Now
-- Ignores the Time column
-- Sends all messages marked "Run = Yes" immediately
-- Perfect for urgent messages
+### Modes
+- **Instant Mode**: Ignores the Time column, sends all messages marked "Run = Yes" immediately
+- **Scheduled Mode**: Sends only messages where current time >= scheduled time
+- **Combined Mode**: Handles both instant (empty time) and scheduled (with time) messages in one run
 
-### Option 2: Send Scheduled Messages
-- Checks the Time column
-- Only sends messages where current time >= scheduled time
-- Perfect for time-sensitive messages
-
-### Option 3: Schedule Future Messages
-- Sets up automatic recurring sending
-- Choose from common patterns or custom schedule
-- Messages are processed automatically at scheduled times
+### Scheduling & Auto-Stop
+- Supports cron-based scheduling (see below)
+- Schedules can auto-stop when all scheduled messages are sent
+- Add new messages and use "Restart Stopped Schedule" to resume
 
 ## 📅 Scheduling Patterns
 
@@ -81,10 +83,16 @@ Create a single sheet with these columns:
 
 ### Environment Variables (.env)
 ```
+DEFAULT_TIMEZONE=Asia/Kolkata
+DUE_WINDOW_MINUTES=60
 GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account_email
-GOOGLE_PRIVATE_KEY=your_private_key_here
 ```
+
+### Google Sheets API Setup
+- Create a Google Cloud project and enable Sheets API
+- Create a Service Account, download JSON, rename to `creds.json`, and place in project root
+- Share your sheet with the service account email
+- Set `GOOGLE_SHEET_ID` in `.env`
 
 ### Team Member Setup
 - The bot will ask for your team member name on first run
@@ -94,19 +102,21 @@ GOOGLE_PRIVATE_KEY=your_private_key_here
 ## 💡 Tips
 
 1. **Test with a few messages first**
-2. **Use Option 1 for immediate sending**
-3. **Use Option 2 for time-sensitive messages**
-4. **Use Option 3 for recurring automation**
+2. **Use Instant Mode for immediate sending**
+3. **Use Scheduled Mode for time-sensitive messages**
+4. **Use Combined Mode for both**
 5. **Check Status column to see what was sent**
-6. **Multiple phone numbers are separated by commas**
+6. **Multiple phone numbers are supported**
+7. **Google Drive image links are auto-converted**
 
 ## 🚨 Troubleshooting
 
 ### Common Issues:
 - **QR Code not scanning**: Make sure WhatsApp Web is not active elsewhere
-- **Sheet not found**: Check the sheet name matches `Messages_[YourName]`
+- **Sheet not found**: Check the sheet name matches and is shared with the service account
 - **Messages not sending**: Verify phone numbers are in correct format
-- **Scheduling not working**: Check cron expression format
+- **Scheduling not working**: Check cron expression format and timezone
+- **Image not sending**: Ensure the link is valid and accessible
 
 ### Getting Help:
 - Check the Status dashboard for connection info
@@ -125,32 +135,31 @@ The Status dashboard shows:
 
 Schedules are automatically saved every 5 minutes and restored when the bot restarts.
 
-## Google Sheets Format
-
-### Required Columns
-- Phone: Recipient's phone number (with country code) change the number accordingly(rightnow it has mine)
-- Message: The message to send
-- Schedule: now or DD/MM/YY HH:MM (use "now" for immediate send)
-- Image: (Optional) Google Drive image link
-- Run: Set to "yes" to process
-- Handled By: Your name (must match config.json)
-- Status: Auto-updated by bot
-
-## Troubleshooting
-
-1. **Connection Issues**
-   - Delete `.wwebjs_auth` folder and restart
-   - Verify Google Sheet access permissions
-   - Check config.json and creds.json are present
-
-2. **Message Not Sending**
-   - Ensure "Run" is set to "yes"
-   - Verify "Handled By" matches your config.json name
-   - Check phone number format (include country code)
-
 ## Support
 
 For any issues:
 1. Check the troubleshooting section
 2. Verify your configuration
-3. Contact the administrator 
+3. Contact the administrator
+
+## 📁 Required Files
+
+After cloning, you must add the following files to the project root:
+
+- `creds.json` — Your Google API credentials (service account JSON)
+- `.env` — Your environment configuration (see example above)
+- `config.json` — Your bot configuration (see template below)
+
+### config.json Template
+```json
+{
+  "teamMember": "your_name",
+  "messagesSheet": "Messages_your_name",
+  "createdAt": "2024-01-01T00:00:00.000Z"
+}
+```
+- **teamMember**: Your name (used for sheet naming and WhatsApp session)
+- **messagesSheet**: The default sheet for your messages (usually `Messages_<your_name>`)
+- **createdAt**: (Optional) Date the config was created
+
+If `config.json` is missing, the bot will create one with default values and prompt you for your team member name on first run.
