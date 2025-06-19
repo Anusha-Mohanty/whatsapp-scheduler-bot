@@ -8,7 +8,7 @@ DEFAULT_TIMEZONE=Asia/Kolkata
 DUE_WINDOW_MINUTES=60
 
 # Google Sheets Configuration
-SHEET_ID=1SsGMtuOuKw2GexadE9Qx9PT-bwNdsaB92TgtEulOj4w
+GOOGLE_SHEET_ID=1SsGMtuOuKw2GexadE9Qx9PT-bwNdsaB92TgtEulOj4w
 SHEET_NAME=Messages_yourname
 
 # WhatsApp Configuration
