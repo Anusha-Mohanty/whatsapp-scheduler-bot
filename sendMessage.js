@@ -188,7 +188,7 @@ async function processCombinedMessages(client, sheetName, options = {}) {
       // Check if already sent
       if (statusCol !== -1 && statusValue) {
         const statusStr = statusValue.toString().toLowerCase();
-        if (statusStr === 'sent' || statusStr === 'completed') {
+        if (statusStr.includes('sent')) {
           continue; // Already sent, don't count as remaining
         }
       }
@@ -224,7 +224,8 @@ async function processCombinedMessages(client, sheetName, options = {}) {
         // Check if already sent
         if (statusCol !== -1 && statusValue) {
           const statusStr = statusValue.toString().toLowerCase();
-          if (statusStr === 'sent' || statusStr === 'completed') {
+          if (statusStr.includes('sent')) {
+            console.log(`⏭️ Row ${rowIndex + 2}: Status is '${statusValue}', skipping as already sent.`);
             skippedCount++;
             continue;
           }
@@ -397,7 +398,7 @@ async function processCombinedMessages(client, sheetName, options = {}) {
         // Check if already sent
         if (statusCol !== -1 && statusValue) {
           const statusStr = statusValue.toString().toLowerCase();
-          if (statusStr === 'sent' || statusStr === 'completed') {
+          if (statusStr.includes('sent')) {
             continue; // Already sent
           }
         }
