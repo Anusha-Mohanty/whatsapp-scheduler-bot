@@ -130,7 +130,7 @@ Schedules are automatically saved every 5 minutes and restored when the bot rest
 ### Required Columns
 - Phone: Recipient's phone number (with country code) change the number accordingly(rightnow it has mine)
 - Message: The message to send
-- Schedule: now or YY/MM/DD HH:MM (use "now" for immediate send)
+- Schedule: now or DD/MM/YY HH:MM (use "now" for immediate send)
 - Image: (Optional) Google Drive image link
 - Run: Set to "yes" to process
 - Handled By: Your name (must match config.json)
