@@ -342,7 +342,7 @@ async function processCombinedMessages(client, sheetName, options = {}) {
         
         // Update status in sheet
         if (statusCol !== -1) {
-          const newStatus = allSent ? 'Sent' : 'Failed';
+          const newStatus = allSent ? '✅ Sent' : 'Failed';
           const range = `${exactSheetName}!${String.fromCharCode(65 + statusCol)}${rowIndex + 2}`;
           await sheets.spreadsheets.values.update({
             spreadsheetId: process.env.GOOGLE_SHEET_ID,
