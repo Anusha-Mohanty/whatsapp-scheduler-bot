@@ -10,30 +10,65 @@ const DUE_WINDOW_MINUTES = process.env.DUE_WINDOW_MINUTES ? parseInt(process.env
 const PASS_LABEL = '[SEND PASS]';
 const COUNT_PASS_LABEL = '[COUNT PASS]';
 
-async function sendMessage(client, number, message, imageUrl) {
+async function sendMessage(client, numberOrLink, message, imageUrl) {
   try {
-    const formattedNumber = number.replace(/\D/g, '');
-    const chatId = formattedNumber.includes('@c.us')
-      ? formattedNumber
-      : `${formattedNumber}@c.us`;
-
-    if (imageUrl?.trim()) {
+    if (isGroupInviteLink(numberOrLink)) {
+      // Handle group invite link
+      const inviteCode = extractInviteCode(numberOrLink);
+      if (!inviteCode) throw new Error('Invalid group invite link format');
+      let groupId;
       try {
-        const media = await MessageMedia.fromUrl(imageUrl.trim(), { unsafeMime: true });
-        await client.sendMessage(chatId, media, { caption: message });
-        console.log(`✅ Image message sent to ${chatId}`);
-        return 'Sent with image';
-      } catch (error) {
-        console.warn(`⚠️ Image send failed to ${chatId}: ${error.message}`);
-        console.log('⏳ Falling back to text-only message...');
+        groupId = await client.acceptInvite(inviteCode); // Joins the group, returns group chat ID
+        console.log(`✅ Joined group via invite: ${numberOrLink} (ID: ${groupId})`);
+      } catch (err) {
+        if (err && err.message && err.message.includes('already in group')) {
+          // Already a member, try to get groupId from invite
+          const info = await client.getInviteInfo(inviteCode);
+          groupId = info.id + '@g.us';
+          console.log(`ℹ️ Already a member of group: ${numberOrLink} (ID: ${groupId})`);
+        } else {
+          throw err;
+        }
       }
-    }
+      // Send message to group
+      if (imageUrl?.trim()) {
+        try {
+          const media = await MessageMedia.fromUrl(imageUrl.trim(), { unsafeMime: true });
+          await client.sendMessage(groupId, media, { caption: message });
+          console.log(`✅ Image message sent to group ${groupId}`);
+          return 'Sent with image to group';
+        } catch (error) {
+          console.warn(`⚠️ Image send failed to group ${groupId}: ${error.message}`);
+          console.log('⏳ Falling back to text-only message...');
+        }
+      }
+      await client.sendMessage(groupId, message);
+      console.log(`✅ Text message sent to group ${groupId}`);
+      return 'Sent text-only to group';
+    } else {
+      const formattedNumber = numberOrLink.replace(/\D/g, '');
+      const chatId = formattedNumber.includes('@c.us')
+        ? formattedNumber
+        : `${formattedNumber}@c.us`;
 
-    await client.sendMessage(chatId, message);
-    console.log(`✅ Text message sent to ${chatId}`);
-    return 'Sent text-only';
+      if (imageUrl?.trim()) {
+        try {
+          const media = await MessageMedia.fromUrl(imageUrl.trim(), { unsafeMime: true });
+          await client.sendMessage(chatId, media, { caption: message });
+          console.log(`✅ Image message sent to ${chatId}`);
+          return 'Sent with image';
+        } catch (error) {
+          console.warn(`⚠️ Image send failed to ${chatId}: ${error.message}`);
+          console.log('⏳ Falling back to text-only message...');
+        }
+      }
+
+      await client.sendMessage(chatId, message);
+      console.log(`✅ Text message sent to ${chatId}`);
+      return 'Sent text-only';
+    }
   } catch (error) {
-    console.error(`❌ Failed to send to ${number}: ${error.message}`);
+    console.error(`❌ Failed to send to ${numberOrLink}: ${error.message}`);
     throw error;
   }
 }
@@ -464,16 +499,20 @@ async function processCombinedMessages(client, sheetName, options = {}) {
  */
 function parsePhoneNumbers(phoneInput) {
   if (!phoneInput) return [];
-  
-  // Split by multiple possible separators: comma, semicolon, newline, pipe, or space
   const separators = /[,;\n|]/;
-  const numbers = phoneInput.split(separators).map(num => {
+  const items = phoneInput.split(separators).map(item => item.trim()).filter(Boolean);
+  const numbers = [];
+  for (const item of items) {
+    if (isGroupInviteLink(item)) {
+      numbers.push(item); // Push group invite link as-is
+      continue;
+    }
     // Remove extra whitespace and clean the number
-    let cleaned = num.trim().replace(/[\s\-\(\)\.]/g, '');
+    let cleaned = item.replace(/[\s\-\(\)\.]/g, '');
     
     // Skip empty numbers
     if (!cleaned) {
-      return null;
+      continue;
     }
     
     // Remove any duplicate digits that might have occurred
@@ -501,20 +540,27 @@ function parsePhoneNumbers(phoneInput) {
       cleaned = '+' + cleaned;
     }
     
-    return cleaned;
-  }).filter(num => {
-    if (!num) return false; // Remove null values
-    
-    // Filter out invalid numbers
-    const cleanNum = num.replace(/[^\d]/g, '');
+    // Validate phone number
+    const cleanNum = cleaned.replace(/[^\d]/g, '');
     const isValid = cleanNum.length >= 10 && cleanNum.length <= 15;
-    return isValid;
-  });
+    if (isValid) numbers.push(cleaned);
+  }
   
   // Remove duplicates
   const uniqueNumbers = [...new Set(numbers)];
   
   return uniqueNumbers;
+}
+
+function isGroupInviteLink(input) {
+  // WhatsApp group invite links are like: https://chat.whatsapp.com/XXXXXXXXXXX
+  return /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(input.trim());
+}
+
+function extractInviteCode(link) {
+  // Extracts the invite code from the link
+  const match = link.trim().match(/^https:\/\/chat\.whatsapp\.com\/([A-Za-z0-9]+)$/);
+  return match ? match[1] : null;
 }
 
 module.exports = {
